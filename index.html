@@ -261,6 +261,34 @@ canvas#rune-canvas{position:fixed;inset:0;z-index:0;pointer-events:none;opacity:
 .toast{position:fixed;bottom:28px;left:50%;transform:translateX(-50%) translateY(16px);background:var(--surface2);border:1px solid var(--border-act);color:var(--text);font-family:'Rajdhani',sans-serif;font-size:12px;letter-spacing:0.2em;padding:11px 22px;border-radius:3px;z-index:999;opacity:0;transition:all .3s;pointer-events:none;white-space:nowrap;box-shadow:0 4px 20px rgba(139,92,246,0.2)}
 .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
 
+/* ── GROQ SECTION ── */
+.groq-box{margin:0 12px 10px;background:var(--surface2);border:1px solid var(--border);border-radius:3px;overflow:hidden;flex-shrink:0;transition:border-color .2s}
+.groq-box.active{border-color:rgba(45,212,191,0.4)}
+.groq-head{display:flex;align-items:center;justify-content:space-between;padding:10px 12px;cursor:pointer;user-select:none}
+.groq-title-wrap{display:flex;align-items:center;gap:8px}
+.groq-logo{font-family:'Cinzel',serif;font-size:11px;font-weight:700;color:var(--teal);letter-spacing:0.05em}
+.groq-dot{width:6px;height:6px;border-radius:50%;background:var(--dim);flex-shrink:0;transition:background .2s,box-shadow .2s}
+.groq-dot.on{background:var(--teal);box-shadow:0 0 6px rgba(45,212,191,0.6)}
+.groq-toggle-btn{display:flex;align-items:center;gap:6px;background:none;border:1px solid var(--border);border-radius:2px;padding:4px 10px;cursor:pointer;transition:all .2s;flex-shrink:0}
+.groq-toggle-btn:hover{border-color:var(--teal);background:var(--teal-d)}
+.groq-toggle-txt{font-family:'Rajdhani',sans-serif;font-size:9px;letter-spacing:0.3em;text-transform:uppercase;color:var(--dim);transition:color .2s}
+.groq-toggle-btn.on .groq-toggle-txt{color:var(--teal)}
+.groq-toggle-btn.on{border-color:rgba(45,212,191,0.4);background:rgba(45,212,191,0.06)}
+.groq-body{padding:0 12px 12px;display:flex;flex-direction:column;gap:8px}
+.groq-key-row{display:flex;gap:6px}
+.groq-key-input{flex:1;background:var(--bg);border:1px solid var(--border);border-radius:2px;padding:7px 10px;color:var(--text);font-family:monospace;font-size:11px;outline:none;transition:border-color .2s;min-width:0}
+.groq-key-input:focus{border-color:rgba(45,212,191,0.4)}
+.groq-key-input::placeholder{color:var(--dim);font-size:10px;font-family:'DM Sans',sans-serif}
+.groq-save-btn{width:30px;height:30px;background:rgba(45,212,191,0.1);border:1px solid rgba(45,212,191,0.3);border-radius:2px;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all .2s;color:var(--teal)}
+.groq-save-btn:hover{background:rgba(45,212,191,0.2)}
+.groq-save-btn svg{width:13px;height:13px}
+.groq-model-select{width:100%;background:var(--bg);border:1px solid var(--border);border-radius:2px;padding:7px 10px;color:var(--mid);font-family:'Rajdhani',sans-serif;font-size:11px;letter-spacing:0.1em;outline:none;cursor:pointer;transition:border-color .2s;-webkit-appearance:none;appearance:none}
+.groq-model-select:focus{border-color:rgba(45,212,191,0.4)}
+.groq-model-select option{background:#110d1e;color:var(--text)}
+.groq-status{font-family:'Rajdhani',sans-serif;font-size:9px;letter-spacing:0.2em;text-transform:uppercase;color:var(--dim);min-height:12px}
+.groq-status.ok{color:var(--teal)}.groq-status.fail{color:var(--red)}
+.groq-chip{font-family:'Rajdhani',sans-serif;font-size:10px;letter-spacing:0.2em;color:var(--teal);background:rgba(45,212,191,0.08);border:1px solid rgba(45,212,191,0.3);padding:4px 10px;border-radius:2px}
+
 @media(max-width:640px){
   .sidebar{position:fixed;top:0;left:0;bottom:0;z-index:20;width:272px;min-width:272px}
   .sidebar.hidden{transform:translateX(-272px)}
@@ -428,6 +456,35 @@ canvas#rune-canvas{position:fixed;inset:0;z-index:0;pointer-events:none;opacity:
       </div>
     </div>
 
+    <!-- GROQ -->
+    <div class="groq-box" id="groq-box">
+      <div class="groq-head">
+        <div class="groq-title-wrap">
+          <div class="groq-dot" id="groq-dot"></div>
+          <div class="groq-logo">Groq API</div>
+        </div>
+        <button class="groq-toggle-btn" id="groq-toggle-btn" onclick="toggleGroq()">
+          <span class="groq-toggle-txt" id="groq-toggle-txt">OFF</span>
+        </button>
+      </div>
+      <div class="groq-body" id="groq-body">
+        <div class="groq-key-row">
+          <input class="groq-key-input" id="groq-key-input" type="password" placeholder="Paste Groq API key..." onkeydown="if(event.key==='Enter')saveGroqKey()"/>
+          <button class="groq-save-btn" onclick="saveGroqKey()" title="Save key">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+          </button>
+        </div>
+        <select class="groq-model-select" id="groq-model-select" onchange="onGroqModelChange()">
+          <option value="llama-3.1-8b-instant">Llama 3.1 8B Instant — Fastest</option>
+          <option value="llama3-8b-8192">Llama 3 8B — Free</option>
+          <option value="mixtral-8x7b-32768">Mixtral 8x7B — Smartest</option>
+          <option value="gemma2-9b-it">Gemma 2 9B — Google</option>
+          <option value="llama-3.3-70b-versatile">Llama 3.3 70B — Powerful</option>
+        </select>
+        <div class="groq-status" id="groq-status">No key saved</div>
+      </div>
+    </div>
+
     <!-- PROXY -->
     <div class="proxy-box">
       <div class="proxy-label">Arcane Code</div>
@@ -471,6 +528,7 @@ canvas#rune-canvas{position:fixed;inset:0;z-index:0;pointer-events:none;opacity:
         </button>
         <div class="mode-chip" id="mode-chip">SANCTUM</div>
         <div class="model-chip" id="active-model-chip">No Spirit</div>
+        <div class="groq-chip" id="groq-topbar-chip" style="display:none">GROQ</div>
       </div>
     </div>
 
@@ -537,19 +595,19 @@ const MODELS = [
     name: 'SmolLM2 135M',
     hfId: 'HuggingFaceTB/SmolLM2-135M-Instruct',
     desc: '~85 MB · Fastest',
-    dtype: 'q4'
+    dtype: 'fp32'
   },
   {
     name: 'SmolLM2 360M',
     hfId: 'HuggingFaceTB/SmolLM2-360M-Instruct',
     desc: '~210 MB · Balanced',
-    dtype: 'q4'
+    dtype: 'fp32'
   },
   {
     name: 'Qwen 0.5B',
     hfId: 'Xenova/Qwen1.5-0.5B-Chat',
-    desc: '~380 MB · Strongest',
-    dtype: 'q4'
+    desc: '~370 MB · Strongest',
+    dtype: 'q8'
   }
 ];
 
@@ -696,9 +754,108 @@ function setStatus(text, sub, type, cls){
 }
 function clearStatus(){ document.getElementById('status-bar').classList.remove('show') }
 
+// ── GROQ ──────────────────────────────────────────────────
+let groqKey = localStorage.getItem('lb_groq_key') || '';
+let groqEnabled = false;
+let groqModel = localStorage.getItem('lb_groq_model') || 'llama-3.1-8b-instant';
+
+function initGroq(){
+  if(groqKey){
+    document.getElementById('groq-key-input').value = groqKey;
+    document.getElementById('groq-status').textContent = 'Key saved ✦';
+    document.getElementById('groq-status').className = 'groq-status ok';
+  }
+  document.getElementById('groq-model-select').value = groqModel;
+  updateGroqUI();
+}
+
+function saveGroqKey(){
+  const inp = document.getElementById('groq-key-input');
+  const key = inp.value.trim();
+  if(!key){ document.getElementById('groq-status').textContent='Paste your key first';document.getElementById('groq-status').className='groq-status fail';return}
+  if(!key.startsWith('gsk_')){document.getElementById('groq-status').textContent='Invalid — Groq keys start with gsk_';document.getElementById('groq-status').className='groq-status fail';return}
+  groqKey = key;
+  localStorage.setItem('lb_groq_key', key);
+  document.getElementById('groq-status').textContent='Key saved ✦';
+  document.getElementById('groq-status').className='groq-status ok';
+  toast('Groq key saved');
+  // auto-enable
+  if(!groqEnabled){ groqEnabled=true; updateGroqUI(); }
+}
+
+function onGroqModelChange(){
+  groqModel = document.getElementById('groq-model-select').value;
+  localStorage.setItem('lb_groq_model', groqModel);
+  if(groqEnabled) document.getElementById('active-model-chip').textContent = groqModel.split('-').slice(0,3).join(' ');
+  toast('Model: '+groqModel);
+}
+
+function toggleGroq(){
+  if(!groqKey && !groqEnabled){
+    document.getElementById('groq-status').textContent='Save a key first';
+    document.getElementById('groq-status').className='groq-status fail';
+    return;
+  }
+  groqEnabled = !groqEnabled;
+  updateGroqUI();
+  if(groqEnabled){
+    toast('Groq ON — '+groqModel);
+    document.getElementById('send-btn').disabled = false;
+    setStatus('Groq: '+groqModel,'Cloud inference — fast & free','ok','show');
+    setTimeout(()=>clearStatus(),3000);
+  } else {
+    toast('Groq OFF');
+    const hasLocal = activeSpirit >= 0;
+    document.getElementById('send-btn').disabled = !hasLocal;
+    document.getElementById('active-model-chip').textContent = hasLocal ? MODELS[activeSpirit].name : 'No Spirit';
+  }
+}
+
+function updateGroqUI(){
+  const btn = document.getElementById('groq-toggle-btn');
+  const txt = document.getElementById('groq-toggle-txt');
+  const dot = document.getElementById('groq-dot');
+  const box = document.getElementById('groq-box');
+  const chip = document.getElementById('groq-topbar-chip');
+  const modelChip = document.getElementById('active-model-chip');
+  if(groqEnabled){
+    btn.classList.add('on'); txt.textContent='ON'; dot.classList.add('on');
+    box.classList.add('active'); chip.style.display='flex';
+    modelChip.textContent = groqModel.split('-').slice(0,3).join(' ');
+  } else {
+    btn.classList.remove('on'); txt.textContent='OFF'; dot.classList.remove('on');
+    box.classList.remove('active'); chip.style.display='none';
+    modelChip.textContent = activeSpirit >= 0 ? MODELS[activeSpirit].name : 'No Spirit';
+  }
+}
+
+async function sendGroq(userText){
+  const messages = [{role:'system', content: getPrompt()}, ...chatHistory.slice(-16)];
+  const res = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': 'Bearer '+groqKey
+    },
+    body: JSON.stringify({
+      model: groqModel,
+      messages: messages,
+      max_tokens: 1024,
+      temperature: 0.75,
+      stream: false
+    })
+  });
+  if(!res.ok){
+    const err = await res.json().catch(()=>({error:{message:res.statusText}}));
+    throw new Error(err.error?.message || 'Groq error '+res.status);
+  }
+  const data = await res.json();
+  return data.choices?.[0]?.message?.content || 'The spirit is silent.';
+}
+
 // ── PROXY ─────────────────────────────────────────────────
 const PROXY_CODE = 'proxypsd18';
-const GRL_CODE = '44+LRG'.split('').reverse().join('');
+const GRL_CODE = '44+LRG';
 window.applyProxy = function(){
   const inp=document.getElementById('proxy-input');
   const msg=document.getElementById('proxy-msg');
@@ -736,13 +893,15 @@ window.activateMode=function(mode){
 function initChat(){
   if(window.innerWidth<=640)document.getElementById('sidebar').classList.add('hidden');
   else document.getElementById('sidebar').classList.remove('hidden');
-  loadHistList();newChat();
-  setStatus('Select a spirit to begin','Choose a model in the sidebar to start chatting','','show');
+  loadHistList();newChat();initGroq();
+  setStatus('Select a spirit to begin','Paste a Groq key in the sidebar for instant cloud AI — or bind a local model','','show');
 }
 
 // ── SEND ──────────────────────────────────────────────────
 window.sendMsg = async function(){
-  if(activeSpirit<0||!spiritEngines[activeSpirit]){toast('No spirit bound — select a model in the sidebar');return}
+  if(!groqEnabled && (activeSpirit<0||!spiritEngines[activeSpirit])){
+    toast('No spirit bound — enable Groq or bind a local model');return;
+  }
   if(isSending) return;
   const inp=document.getElementById('chat-input');
   const text=inp.value.trim();if(!text)return;
@@ -755,46 +914,35 @@ window.sendMsg = async function(){
   document.getElementById('send-btn').disabled=true;
 
   try {
-    const gen = spiritEngines[activeSpirit];
+    let reply = '';
 
-    // Build messages array with system prompt
-    const msgs = [
-      {role:'system', content: getPrompt()},
-      ...chatHistory.slice(-12)
-    ];
-
-    const out = await gen(msgs, {
-      max_new_tokens: 512,
-      do_sample: true,
-      temperature: 0.75,
-      repetition_penalty: 1.15,
-      return_full_text: false,
-    });
+    if(groqEnabled){
+      // ── GROQ PATH ──
+      reply = await sendGroq(text);
+    } else {
+      // ── LOCAL PATH ──
+      const gen = spiritEngines[activeSpirit];
+      const msgs = [{role:'system',content:getPrompt()},...chatHistory.slice(-12)];
+      const out = await gen(msgs,{max_new_tokens:512,do_sample:true,temperature:0.75,repetition_penalty:1.15,return_full_text:false});
+      if(Array.isArray(out)&&out[0]){
+        const g=out[0].generated_text;
+        reply=Array.isArray(g)?g.at(-1)?.content||'':g||'';
+      }
+      if(!reply) reply='The spirit whispers nothing...';
+    }
 
     removeTyping(tid);
-
-    let reply = '';
-    if(Array.isArray(out) && out[0]){
-      const gen_text = out[0].generated_text;
-      if(Array.isArray(gen_text)){
-        // v3 format: array of message objects
-        reply = gen_text.at(-1)?.content || '';
-      } else {
-        reply = gen_text || '';
-      }
-    }
-    if(!reply) reply = 'The spirit whispers nothing...';
-
     chatHistory.push({role:'assistant',content:reply});
     appendMsg('ai',reply);
     saveSession();
   } catch(e){
     removeTyping(tid);
-    appendMsg('ai','Spirit error: '+e.message);
+    appendMsg('ai','Error: '+e.message);
     console.error(e);
+    if(groqEnabled) toast('Groq error: '+e.message.slice(0,50));
   } finally {
     isSending=false;
-    document.getElementById('send-btn').disabled=activeSpirit<0;
+    document.getElementById('send-btn').disabled = !groqEnabled && activeSpirit<0;
   }
 };
 
